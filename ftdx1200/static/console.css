@@ -1,0 +1,260 @@
+:root {
+  --bg0: #0f1c24;
+  --bg1: #16303a;
+  --ink: #e8f0f3;
+  --muted: #9bb0b8;
+  --line: rgba(232, 240, 243, 0.14);
+  --accent: #c4a35a;
+  --accent-ink: #1a1408;
+  --ok: #6fbf8b;
+  --err: #e07a6a;
+  --field: rgba(8, 18, 22, 0.55);
+  --mono: "IBM Plex Mono", ui-monospace, monospace;
+  --sans: "Sora", "Segoe UI", sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  color: var(--ink);
+  font-family: var(--sans);
+  background:
+    radial-gradient(1200px 700px at 10% -10%, #2a5a64 0%, transparent 55%),
+    radial-gradient(900px 600px at 100% 0%, #3a4a2e 0%, transparent 50%),
+    linear-gradient(160deg, var(--bg0), var(--bg1) 55%, #102028);
+}
+
+.glow {
+  position: fixed;
+  inset: auto -10% -20% auto;
+  width: 50vw;
+  height: 50vw;
+  background: radial-gradient(circle, rgba(196, 163, 90, 0.18), transparent 65%);
+  pointer-events: none;
+  animation: drift 12s ease-in-out infinite alternate;
+}
+
+@keyframes drift {
+  from { transform: translate(-4%, 2%); opacity: 0.7; }
+  to { transform: translate(3%, -4%); opacity: 1; }
+}
+
+.shell {
+  width: min(720px, calc(100% - 2rem));
+  margin: 0 auto;
+  padding: 2.5rem 0 3rem;
+  animation: rise 0.55s ease-out both;
+}
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.brand {
+  margin-bottom: 1.75rem;
+}
+
+.product {
+  margin: 0;
+  font-size: clamp(2.4rem, 7vw, 3.6rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 0.95;
+  color: var(--accent);
+}
+
+.brand h1 {
+  margin: 0.35rem 0 0;
+  font-size: 1.15rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+
+.lede {
+  margin: 0.7rem 0 0;
+  max-width: 36rem;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+section {
+  margin-top: 1.25rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--line);
+}
+
+.section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.9rem;
+}
+
+.section-head h2 {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.hint {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.hint code,
+code {
+  font-family: var(--mono);
+  color: var(--accent);
+}
+
+.pill {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+}
+
+.pill.online { color: var(--ok); }
+.pill.offline { color: var(--muted); }
+
+.connect-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.connect-grid .actions {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 0.6rem;
+  margin-top: 0.25rem;
+}
+
+label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+input {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 0;
+  background: var(--field);
+  color: var(--ink);
+  font-family: var(--mono);
+  font-size: 0.95rem;
+  padding: 0.65rem 0.7rem;
+  outline: none;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+input:focus {
+  border-color: rgba(196, 163, 90, 0.7);
+  background: rgba(8, 18, 22, 0.75);
+}
+
+button {
+  appearance: none;
+  border: 0;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-family: var(--sans);
+  font-weight: 600;
+  font-size: 0.9rem;
+  letter-spacing: 0.03em;
+  padding: 0.7rem 1.1rem;
+  cursor: pointer;
+  transition: transform 0.15s ease, filter 0.15s ease, opacity 0.15s ease;
+}
+
+button:hover:not(:disabled) {
+  filter: brightness(1.05);
+  transform: translateY(-1px);
+}
+
+button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+button.ghost {
+  background: transparent;
+  color: var(--ink);
+  border: 1px solid var(--line);
+}
+
+.send-row {
+  display: flex;
+  gap: 0.65rem;
+  align-items: end;
+}
+
+.send-row .grow {
+  flex: 1;
+}
+
+.response-label {
+  margin-top: 1rem;
+}
+
+.response {
+  margin: 0.35rem 0 0;
+  min-height: 5.5rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--line);
+  background: rgba(6, 14, 18, 0.72);
+  font-family: var(--mono);
+  font-size: 0.95rem;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  word-break: break-word;
+  animation: none;
+}
+
+.response.flash {
+  animation: flash 0.45s ease;
+}
+
+@keyframes flash {
+  from { background: rgba(196, 163, 90, 0.18); }
+  to { background: rgba(6, 14, 18, 0.72); }
+}
+
+.msg {
+  margin: 0.75rem 0 0;
+  font-size: 0.88rem;
+}
+
+.msg.error { color: var(--err); }
+.msg.ok { color: var(--ok); }
+
+@media (max-width: 720px) {
+  .connect-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .send-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

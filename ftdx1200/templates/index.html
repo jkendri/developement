@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>FTDX-1200 CAT Console</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Sora:wght@500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='console.css') }}" />
+</head>
+<body>
+  <div class="glow" aria-hidden="true"></div>
+  <main class="shell">
+    <header class="brand">
+      <p class="product">FTDX-1200</p>
+      <h1>CAT Console</h1>
+      <p class="lede">Send a CAT command and read the radio reply over serial.</p>
+    </header>
+
+    <section class="link" aria-labelledby="link-heading">
+      <div class="section-head">
+        <h2 id="link-heading">Connection</h2>
+        <p id="status-pill" class="pill offline" role="status">Disconnected</p>
+      </div>
+      <form id="connect-form" class="connect-grid">
+        <label>
+          Port
+          <input id="port" name="port" value="{{ settings.port }}" autocomplete="off" />
+        </label>
+        <label>
+          Baud
+          <input id="baudrate" name="baudrate" type="number" value="{{ settings.baudrate }}" />
+        </label>
+        <label>
+          Data bits
+          <input id="bytesize" name="bytesize" type="number" value="{{ settings.bytesize }}" />
+        </label>
+        <label>
+          Parity
+          <input id="parity" name="parity" value="{{ settings.parity }}" maxlength="1" />
+        </label>
+        <label>
+          Stop bits
+          <input id="stopbits" name="stopbits" type="number" step="0.5" value="{{ settings.stopbits }}" />
+        </label>
+        <div class="actions">
+          <button type="submit" id="btn-connect">Connect</button>
+          <button type="button" id="btn-disconnect" class="ghost" disabled>Disconnect</button>
+        </div>
+      </form>
+      <p id="connect-msg" class="msg" hidden></p>
+    </section>
+
+    <section class="console" aria-labelledby="console-heading">
+      <div class="section-head">
+        <h2 id="console-heading">Command</h2>
+        <p class="hint">Example: <code>ID;</code> or <code>FA;</code></p>
+      </div>
+      <form id="send-form" class="send-row">
+        <label class="grow">
+          CAT string
+          <input id="command" name="command" placeholder="ID;" autocomplete="off" spellcheck="false" />
+        </label>
+        <button type="submit" id="btn-send" disabled>Send</button>
+      </form>
+      <label class="response-label" for="response">Response</label>
+      <pre id="response" class="response" aria-live="polite">(no response yet)</pre>
+      <p id="send-msg" class="msg" hidden></p>
+    </section>
+  </main>
+  <script src="{{ url_for('static', filename='console.js') }}"></script>
+</body>
+</html>
