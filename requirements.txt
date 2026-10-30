@@ -1,0 +1,7 @@
+pyserial>=3.5
+flask>=3.0.0
+pywebview>=5.0
+sounddevice>=0.5.0
+numpy>=1.26
+dvoacap>=1.0.2.0
+sgp4>=2.22

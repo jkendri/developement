@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SHACKBOARD</title>
+  <link rel="icon" href="/static/ftdx1200.ico" />
+  <link rel="stylesheet" href="/static/vendor/leaflet/leaflet.css" />
+  <link rel="stylesheet" href="/static/style.css?v=board32" />
+</head>
+<body>
+  <header>
+    <div class="header-brand">
+      <h1>SHACKBOARD <span class="app-version">v1.31</span></h1>
+    </div>
+    <div class="header-call" id="headerCall">KC5JK</div>
+    <div class="header-tools">
+      <div class="header-cluster">
+        <div id="linkBadge" class="badge off">Disconnected</div>
+      </div>
+      <div class="header-cluster">
+        <button id="panelLock" type="button" aria-pressed="false" title="Lock panels so they cannot be moved or resized">Lock</button>
+        <button id="themeBtn" type="button" title="Cycle themes: Dark, Light, Night, Ocean, High, DX1200">Dark</button>
+        <button id="lookBtn" type="button" aria-expanded="false" aria-controls="lookPop">Look</button>
+        <button id="setupBtn" type="button" aria-pressed="false">Setup</button>
+        <button id="logBtn" type="button" aria-pressed="false">Log</button>
+        <button id="issShow" type="button">ISS</button>
+        <button id="panShow" type="button">Panadapter</button>
+      </div>
+      <div class="header-cluster header-panels">
+        <button id="modeBandShow" type="button">Mode / Band</button>
+        <button id="favShow" type="button">Favorites</button>
+        <button id="tunerShow" type="button">AT-1000</button>
+        <button id="voacapShow" type="button">VOACAP</button>
+      </div>
+      <div class="header-cluster">
+        <button id="powerOn" type="button" disabled title="CAT PS1 — turn the radio on">Power on</button>
+        <button id="powerOff" type="button" disabled title="CAT PS0 — turn the radio off">Power off</button>
+      </div>
+    </div>
+  </header>
+  <div id="lookPop" class="look-pop" hidden>
+    <h2>Layouts</h2>
+    <div class="look-row">
+      <input id="layoutName" type="text" maxlength="24" placeholder="Layout name" autocomplete="off" />
+      <button id="layoutSave" type="button">Save</button>
+    </div>
+    <div class="look-row">
+      <select id="layoutPick" aria-label="Saved layouts"></select>
+      <button id="layoutUse" type="button">Use</button>
+      <button id="layoutDelete" type="button">Delete</button>
+    </div>
+    <div class="look-row">
+      <button id="scaleToggle" type="button" aria-pressed="false" title="Scale every panel when the window is resized. Turn off to restore the saved arrangement.">Proportional sizing</button>
+    </div>
+    <h2>Colors</h2>
+    <div class="look-colors">
+      <label>Background <input id="colorBg" type="color" value="#0c100b" /></label>
+      <label>Panels <input id="colorPanel" type="color" value="#141c12" /></label>
+      <label>Meters <input id="colorMeter" type="color" value="#10160e" /></label>
+      <label>Accent <input id="colorAccent" type="color" value="#8fbf78" /></label>
+      <label>Text <input id="colorInk" type="color" value="#e7eee0" /></label>
+    </div>
+    <button id="colorReset" type="button">Reset colors</button>
+    <p class="look-note">Colors sit on top of the theme. Reset clears them. A saved layout stores where the panels are. Proportional sizing scales the panels with the window. Turning it off restores the arrangement from when it was switched on.</p>
+  </div>
+
+  <div id="desk">
+  <section class="panel clock-panel" id="clockPanel" aria-label="Clocks">
+    <div class="clock-pair">
+      <div class="utc-clock">
+        <div id="localClock" aria-label="Local digital clock">00:00:00</div>
+        <div class="clock-meta">
+          <span>LOCAL</span>
+          <span id="localDate"></span>
+        </div>
+      </div>
+      <div class="utc-clock">
+        <div id="utcClock" aria-label="UTC digital clock">00:00:00</div>
+        <div class="clock-meta">
+          <span>UTC</span>
+          <span id="utcDate"></span>
+        </div>
+      </div>
+    </div>
+  </section>
+  <section class="panel connect" id="connectPanel">
+    <label>
+      Serial port
+      <select id="port"></select>
+    </label>
+    <label>
+      Baud
+      <select id="baud">
+        <option value="4800">4800</option>
+        <option value="9600">9600</option>
+        <option value="19200">19200</option>
+        <option value="38400" selected>38400</option>
+      </select>
+    </label>
+    <label>
+      Stop bits
+      <select id="stopbits">
+        <option value="2">2</option>
+        <option value="1">1</option>
+      </select>
+    </label>
+    <button id="refresh" type="button">Refresh</button>
+    <button id="connect" type="button" class="primary">Connect</button>
+    <button id="demo" type="button">Demo mode</button>
+    <button id="disconnect" type="button" disabled>Disconnect</button>
+    <label class="check">
+      <input id="autoConnect" type="checkbox" />
+      Auto connect
+    </label>
+    <label>
+      QRZ username
+      <input id="qrzUser" type="text" autocomplete="username" />
+    </label>
+    <label>
+      QRZ password
+      <input id="qrzPass" type="password" autocomplete="current-password" />
+    </label>
+    <button id="qrzSave" type="button">Save QRZ</button>
+    <span id="qrzStatus" class="hint"></span>
+    <label>
+      My callsign
+      <input id="myCall" type="text" maxlength="16" autocomplete="off" />
+    </label>
+    <label>
+      QRZ logbook API key
+      <input id="qrzLogKey" type="password" autocomplete="off" placeholder="from qrz.com logbook settings" />
+    </label>
+    <label>
+      HRD logbook name
+      <input id="hrdDb" type="text" maxlength="80" placeholder="blank = first open book" autocomplete="off" />
+    </label>
+    <label>
+      HRD TCP port
+      <input id="hrdPort" type="number" min="1" max="65535" value="7826" />
+    </label>
+    <p class="hint">The app starts HRD Logbook and View → IP Client (port 7826) by itself. It will not start HRD Rig Control. UDP fallback is QSO Forwarding Receive (12060 / 2333).</p>
+    <button id="logbookSave" type="button">Save log settings</button>
+    <span id="logbookStatus" class="hint"></span>
+  </section>
+
+  <div class="ops-row">
+  <section class="panel vfo" id="vfoPanel">
+    <div class="vfo-top">
+      <span class="vfo-id">
+        <span id="vfoLabel">VFO-A</span>
+        <button id="meterStyle" type="button" aria-pressed="false" title="Show the S-meter as a bar graph">Bar</button>
+      </span>
+      <span id="txLamp" class="tx-lamp">RX</span>
+    </div>
+    <div class="vfo-main">
+      <div class="vfo-tune">
+        <div class="analog-wrap">
+          <canvas id="sAnalog" width="360" height="180" aria-label="Analog S-meter"></canvas>
+        </div>
+        <div class="s-graph" id="sGraph" aria-label="S-meter">
+          <div class="s-graph-top">
+            <span id="sGraphTitle">S</span>
+            <span id="sGraphSide">dB</span>
+          </div>
+          <div class="s-graph-marks" id="sGraphMarks"></div>
+          <div class="s-graph-track" id="sGraphTrack"></div>
+        </div>
+        <form id="freqForm">
+          <div id="freqReadout" class="freq-readout" title="Scroll or drag a digit to tune. Double-click to type.">
+            <span id="freqDigits" class="freq-digits"></span>
+          </div>
+          <input id="freq" class="freq-edit" inputmode="decimal" autocomplete="off" spellcheck="false" value="14.250000" hidden />
+          <span class="mhz">MHz</span>
+          <button type="submit">Set</button>
+        </form>
+      </div>
+      <div class="dial-box">
+        <div id="dial" class="dial" role="slider" tabindex="0" aria-label="Tuning dial, 1 kHz per click"></div>
+        <div class="dial-cap">1 kHz</div>
+      </div>
+    </div>
+    <div class="rf-power">
+      <span class="rf-power-head">
+        RF power
+        <button id="powerLock" type="button" aria-label="Unlock RF power to change it" title="Unlock RF power to change it">
+          <svg class="lock-closed" viewBox="0 0 16 16" aria-hidden="true">
+            <rect x="3" y="7" width="10" height="8" rx="1.6" fill="none" stroke="currentColor" stroke-width="1.6"/>
+            <path d="M5.1 7V5.1a2.9 2.9 0 0 1 5.8 0V7" fill="none" stroke="currentColor" stroke-width="1.6"/>
+          </svg>
+          <svg class="lock-open" viewBox="0 0 16 16" aria-hidden="true">
+            <rect x="3" y="7" width="10" height="8" rx="1.6" fill="none" stroke="currentColor" stroke-width="1.6"/>
+            <path d="M5.1 7V5.1a2.9 2.9 0 0 1 5.2-1.7" fill="none" stroke="currentColor" stroke-width="1.6"/>
+          </svg>
+        </button>
+      </span>
+      <span class="rf-power-row">
+        <input id="power" type="range" min="5" max="100" step="1" value="20" />
+        <span id="powerVal">20 W</span>
+      </span>
+    </div>
+    <div class="rf-power vfo-rg">
+      <span class="rf-power-head">RF gain</span>
+      <span class="rf-power-row">
+        <input id="rfGain" type="range" min="0" max="100" value="100" />
+        <span id="rfGainVal">100%</span>
+      </span>
+    </div>
+    <div class="rf-power vfo-af">
+      <span class="rf-power-head af-head">AF gain</span>
+      <span class="rf-power-row af-row">
+        <input id="af" type="range" min="0" max="100" value="50" />
+        <span id="afVal">50%</span>
+      </span>
+    </div>
+    <div class="steps" id="steps"></div>
+  </section>
+
+  <section class="panel pota-panel" id="potaPanel">
+    <div class="pota-head">
+      <h2>POTA</h2>
+      <span id="potaMeta" class="hint">USA · last 8 min · pota.app</span>
+      <button id="potaRefresh" type="button">Refresh</button>
+    </div>
+    <div class="row pota-filter">
+      <label class="grow">
+        Filter
+        <input id="potaFilter" type="text" maxlength="40" placeholder="Call, park, mode…" autocomplete="off" />
+      </label>
+    </div>
+    <div class="row pota-scan">
+      <button id="potaScan" type="button">Scan</button>
+      <label class="pota-age-label" title="Show USA activations spotted within this many minutes">
+        Age
+        <span class="pota-age-row">
+          <input id="potaMaxAge" type="range" min="1" max="60" step="1" value="8" />
+          <span id="potaMaxAgeVal">8 min</span>
+        </span>
+      </label>
+      <label class="pota-delay">
+        Delay
+        <span class="pota-delay-row">
+          <input id="potaScanDelay" type="range" min="2" max="30" value="3" />
+          <span id="potaScanDelayVal">2000 ms</span>
+        </span>
+      </label>
+    </div>
+    <div class="row pota-log">
+      <label>
+        Call
+        <input id="logCall" type="text" maxlength="16" autocomplete="off" />
+      </label>
+      <label>
+        RST S
+        <input id="logRstS" type="text" maxlength="3" value="59" />
+      </label>
+      <label>
+        RST R
+        <input id="logRstR" type="text" maxlength="3" value="59" />
+      </label>
+      <button id="logQso" type="button" class="primary">Log QSO</button>
+      <button id="potaHideLogged" type="button" title="Hide spots already logged today">Hide logged</button>
+      <button id="potaHideWorked" type="button" title="Hide spots worked before">Hide WKD</button>
+      <span id="logQsoStatus" class="hint"></span>
+    </div>
+    <div class="keys pota-meters" id="potaMeters"></div>
+    <div class="keys pota-modes" id="potaModes"></div>
+    <div class="pota-scroll">
+      <div id="potaList" class="pota-list"></div>
+    </div>
+  </section>
+  <section class="panel blank-panel" id="blankPanel" aria-label="Space Weather">
+    <div class="space-wx-head">
+      <h2>Space Weather</h2>
+    </div>
+    <button type="button" class="space-wx-banner" id="solarBannerBtn" title="N0NBH solar-terrestrial data — hamqsl.com">
+      <img id="solarBanner" alt="HamQSL solar-terrestrial data" width="430" height="139" />
+    </button>
+    <p class="hint" id="solarCredit">N0NBH · hamqsl.com</p>
+    <div class="radar-block" id="radarPanel">
+      <div class="radar-head">
+        <h2>USA radar</h2>
+        <span id="radarPathMeta" class="hint">Click a POTA call</span>
+        <button id="radarRefresh" type="button">Refresh</button>
+      </div>
+      <div id="radarMap" role="img" aria-label="United States weather radar map"></div>
+    </div>
+  </section>
+
+  <section class="panel fav-panel" id="favPanel">
+    <div class="fav-head">
+      <h2>Favorites</h2>
+      <button id="favHide" type="button">Hide</button>
+    </div>
+    <div class="row fav-add">
+      <label class="grow">
+        Name
+        <input id="favName" type="text" maxlength="40" placeholder="Optional label" autocomplete="off" />
+      </label>
+      <button id="favSave" type="button">Save current</button>
+      <button id="favId" type="button" title="Look up the current frequency on the internet">ID</button>
+    </div>
+    <div id="favIdBanner" class="fav-id-banner" hidden>
+      <button type="button" class="fav-id-close" id="favIdClose" title="Hide">×</button>
+      <div class="fav-id-kicker" id="favIdKicker"></div>
+      <div class="fav-id-title" id="favIdTitle"></div>
+      <div class="fav-id-detail" id="favIdDetail"></div>
+      <div class="fav-id-meta" id="favIdMeta"></div>
+    </div>
+    <div id="favList" class="fav-list"></div>
+  </section>
+  </div>
+
+  <section class="panel" id="modeBandPanel">
+    <div class="mode-band-bar">
+      <h2>Mode / Band</h2>
+      <button id="modeBandHide" type="button">Hide</button>
+    </div>
+    <div class="mode-band">
+      <div>
+        <h2>Mode</h2>
+        <div class="keys" id="modes"></div>
+      </div>
+      <div>
+        <h2>Band</h2>
+        <div class="keys" id="bands"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" id="issPanel" aria-label="ISS">
+    <div class="iss-bar">
+      <h2>ISS</h2>
+      <label title="Minimum peak elevation above the horizon">Height
+        <input id="issEl" type="number" min="0" max="80" step="1" value="10" />
+        <span>°</span>
+      </label>
+      <label title="Minimum time the station stays at or above that height">Duration
+        <input id="issDur" type="number" min="0" max="20" step="1" value="2" />
+        <span>min</span>
+      </label>
+      <label title="How many upcoming passes to list">Passes
+        <input id="issCount" type="number" min="1" max="24" step="1" value="8" />
+      </label>
+      <label>Grid
+        <input id="issGrid" type="text" maxlength="6" placeholder="EM12" spellcheck="false" />
+      </label>
+      <button id="issRefresh" type="button">Refresh</button>
+      <button id="issHide" type="button">Hide</button>
+    </div>
+    <p id="issMeta" class="iss-meta">Next passes of the ISS.</p>
+    <div class="iss-scroll">
+      <table id="issTable">
+        <thead>
+          <tr>
+            <th>Local</th>
+            <th>AOS</th>
+            <th>LOS</th>
+            <th>Duration</th>
+            <th>Peak</th>
+            <th>Path</th>
+            <th>Starts</th>
+          </tr>
+        </thead>
+        <tbody id="issBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="panel" id="panadapterPanel" aria-label="Panadapter">
+    <div class="pan-bar">
+      <h2>Panadapter</h2>
+      <span id="panMeta" class="pan-meta">Opening the RTL-SDR</span>
+      <span class="pan-zoom">
+        <button id="panZoomOut" type="button" title="Zoom out">−</button>
+        <button id="panZoomIn" type="button" title="Zoom in">+</button>
+      </span>
+      <button id="panHide" type="button">Hide</button>
+    </div>
+    <canvas id="panScope" class="pan-scope" width="960" height="160" title="Click to tune"></canvas>
+  </section>
+
+  <section class="panel tuner-panel" id="tunerPanel" aria-label="AT-1000ProII">
+    <div class="tuner-bar">
+      <h2>AT-1000</h2>
+      <span id="tunerBadge" class="badge off">Disconnected</span>
+      <button id="tunerSetupToggle" type="button" aria-pressed="true">Hide setup</button>
+      <button id="tunerHide" type="button">Hide</button>
+    </div>
+    <div class="tuner-body">
+      <div id="tunerSetup">
+      <p class="tuner-note">Ext. Meter jack · 38400 8N1. Memory and full tune need about 10–25 W. This does not key the radio.</p>
+      <div class="tuner-setup">
+        <label>
+          Tuner port
+          <select id="tunerPort"></select>
+        </label>
+        <button id="tunerRefresh" type="button">Refresh</button>
+        <button id="tunerConnect" type="button" class="primary">Connect</button>
+        <button id="tunerDemo" type="button">Demo</button>
+        <button id="tunerDisconnect" type="button" disabled>Disconnect</button>
+        <label class="tuner-check">
+          <input id="tunerAuto" type="checkbox" />
+          Auto connect
+        </label>
+        <label>
+          PSU volts
+          <select id="tunerVolts">
+            <option>12.0</option>
+            <option>12.5</option>
+            <option>13.0</option>
+            <option>13.5</option>
+            <option selected>13.8</option>
+            <option>14.3</option>
+          </select>
+        </label>
+        <label>
+          Known watts
+          <input id="tunerCalWatts" type="number" min="1" max="1500" step="0.1" value="10" />
+        </label>
+        <button id="tunerCalibrate" type="button">Calibrate</button>
+        <button id="tunerCalReset" type="button">Reset cal</button>
+        <div class="tuner-meter-mode" role="group" aria-label="Meter peak or average">
+          <button id="tunerMeterPeak" type="button" class="on" aria-pressed="true">Peak</button>
+          <button id="tunerMeterAvg" type="button" aria-pressed="false">Average</button>
+        </div>
+        <label class="tuner-check">
+          <input id="tunerShowLog" type="checkbox" />
+          Show log
+        </label>
+      </div>
+      </div>
+      <div class="tuner-face">
+        <canvas id="tunerAnalog" width="640" height="280" aria-label="Analog watts and SWR meter"></canvas>
+        <div class="s-graph tuner-po-graph" id="tunerPoGraph" aria-label="Power output">
+          <div class="s-graph-top">
+            <span id="tunerGraphTitle">PO</span>
+            <span id="tunerGraphSide" class="tuner-graph-side">SWR</span>
+          </div>
+          <div class="s-graph-marks" id="tunerGraphMarks"></div>
+          <div class="s-graph-track" id="tunerGraphTrack"></div>
+        </div>
+        <div class="tuner-side">
+          <div class="tuner-led-col">
+            <div class="tuner-led-row"><span class="tuner-dot" id="tunerLed100"></span>100</div>
+            <div class="tuner-led-row"><span class="tuner-dot on" id="tunerLed1000"></span>500</div>
+          </div>
+          <div class="tuner-led-col">
+            <div class="tuner-led-row"><span class="tuner-dot on" id="tunerLedPeak"></span>PEAK</div>
+            <div class="tuner-led-row"><span class="tuner-dot" id="tunerLedAve"></span>AVE</div>
+          </div>
+          <div class="tuner-led-col">
+            <div class="tuner-led-row"><span class="tuner-dot on" id="tunerLedFwd"></span>FWD</div>
+            <div class="tuner-led-row"><span class="tuner-dot" id="tunerLedRev"></span>REV</div>
+            <div class="tuner-led-row"><span class="tuner-dot" id="tunerLedSwr"></span>SWR</div>
+          </div>
+        </div>
+        <button id="tunerBarStyle" class="tuner-face-bar" type="button" aria-pressed="false" title="Show power output as a bar graph">Bar</button>
+        <div class="tuner-face-keys">
+          <button id="tunerScale" type="button">Scale</button>
+          <button id="tunerAnalogPeak" type="button">Peak</button>
+          <button id="tunerAnalogAve" type="button">Ave</button>
+          <button id="tunerAnalogMeter" type="button">Meter</button>
+        </div>
+      </div>
+      <div class="tuner-reads">
+        <article>
+          <h3 id="tunerFwdLabel">Forward (peak)</h3>
+          <div class="tuner-read"><span id="tunerFwd">0.0</span><small>W</small></div>
+          <div class="tuner-track"><span id="tunerFwdBar"></span></div>
+          <p><span id="tunerFwdAltLabel">avg</span> <span id="tunerFwdAvg">0.0</span> W · ADC <span id="tunerFwdRaw">0</span></p>
+        </article>
+        <article>
+          <h3>Reflected</h3>
+          <div class="tuner-read"><span id="tunerRefl">0.0</span><small>W</small></div>
+          <div class="tuner-track refl"><span id="tunerReflBar"></span></div>
+        </article>
+        <article>
+          <h3>SWR</h3>
+          <div class="tuner-read"><span id="tunerSwr">1.00</span><small>:1</small></div>
+          <div class="tuner-track swr"><span id="tunerSwrBar"></span></div>
+        </article>
+      </div>
+      <div class="tuner-chart" id="tunerChartWrap">
+        <div class="tuner-chart-head">
+          <h3>Live strip</h3>
+          <button id="tunerChartToggle" type="button" aria-pressed="true">Hide</button>
+          <label>
+            Window
+            <select id="tunerChartWindow">
+              <option value="30">30 s</option>
+              <option value="60" selected>60 s</option>
+              <option value="120">120 s</option>
+            </select>
+          </label>
+          <button id="tunerChartPause" type="button">Pause</button>
+          <button id="tunerChartClear" type="button">Clear</button>
+        </div>
+        <canvas id="tunerStrip" width="640" height="160" aria-label="Forward, reflected, and SWR over time"></canvas>
+      </div>
+      <div class="tuner-status" id="tunerStatus">
+        <button id="tunerStatusToggle" type="button" aria-pressed="true">Hide status</button>
+        <div class="tuner-status-text">
+          <div>Band <strong id="tunerBand">—</strong></div>
+          <div>Antenna <strong id="tunerAntenna">—</strong></div>
+          <div>Mode <strong id="tunerMode">—</strong></div>
+          <div>Last tune <strong id="tunerLast">—</strong></div>
+        </div>
+      </div>
+      <div class="tuner-keys" id="tunerKeys">
+        <button id="tunerKeysToggle" type="button" aria-pressed="true">Hide keys</button>
+        <div class="tuner-keys-row">
+          <button type="button" data-tuner-cmd="memory_tune">Memory tune</button>
+          <button type="button" data-tuner-cmd="full_tune">Full tune</button>
+          <button type="button" data-tuner-cmd="antenna">Toggle antenna</button>
+          <button type="button" data-tuner-cmd="bypass">Bypass</button>
+          <button type="button" data-tuner-cmd="auto">Auto</button>
+          <button type="button" data-tuner-cmd="manual">Manual</button>
+          <button type="button" data-tuner-cmd="sync">Sync</button>
+        </div>
+      </div>
+      <pre id="tunerLog" hidden></pre>
+    </div>
+  </section>
+
+  <section class="panel" id="voacapPanel" aria-label="VOACAP">
+    <div class="voacap-bar">
+      <h2>VOACAP</h2>
+      <label>Grid
+        <input id="voacapGrid" type="text" maxlength="6" placeholder="EM12" spellcheck="false" />
+      </label>
+      <label>Mode
+        <select id="voacapMode">
+          <option value="ssb">SSB</option>
+          <option value="cw">CW</option>
+          <option value="ft8">FT8</option>
+        </select>
+      </label>
+      <label>Power
+        <input id="voacapPower" type="number" min="5" max="1500" step="5" value="100" />
+      </label>
+      <button id="voacapRefresh" type="button">Refresh</button>
+      <button id="voacapSite" type="button" title="Open voacap.com in the browser">Site</button>
+      <button id="voacapHide" type="button">Hide</button>
+    </div>
+    <p id="voacapMeta" class="voacap-meta">Short-path reliability for this UTC hour.</p>
+    <div class="voacap-scroll">
+      <table id="voacapTable">
+        <thead><tr id="voacapHead"></tr></thead>
+        <tbody id="voacapBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="panel" id="rxAudioPanel">
+    <h2>RX audio</h2>
+    <p class="hint">Monitor the radio’s USB or line input on this PC. Pick the SCU-17 / USB Audio CODEC as input.</p>
+    <div class="row">
+      <label class="grow">
+        Input
+        <select id="rxIn"></select>
+      </label>
+      <label class="grow">
+        Speakers
+        <select id="rxOut"></select>
+      </label>
+    </div>
+    <div class="row audio-tools">
+      <button id="rxMonitor" type="button">Monitor</button>
+      <button id="rxMute" type="button">Mute</button>
+      <label class="grow">
+        PC volume
+        <input id="rxVol" type="range" min="0" max="150" value="80" />
+      </label>
+    </div>
+    <div class="s-meter">
+      <div class="s-label">RX</div>
+      <div class="s-track"><div id="rxBar" class="s-bar"></div></div>
+      <div id="rxErr" class="s-val"></div>
+    </div>
+  </section>
+
+  <section class="panel keys" id="keyPanel">
+    <button id="ptt" type="button" class="ptt">PTT</button>
+    <button id="swap" type="button">A / B</button>
+    <button id="copyAB" type="button">A → B</button>
+    <button id="tunerStart" type="button">Tune</button>
+    <button id="tunerOn" type="button">Tuner on</button>
+    <button id="tunerOff" type="button">Tuner off</button>
+  </section>
+
+  <section class="panel log-wrap" id="logPanel">
+    <h2>Log</h2>
+    <pre id="log"></pre>
+  </section>
+  </div>
+
+  <section class="panel qrz-card" id="qrzCard" hidden>
+    <div class="qrz-card-top">
+      <h2>QRZ</h2>
+      <button id="qrzCardClose" type="button">Close</button>
+    </div>
+    <img id="qrzCardPhoto" alt="" hidden />
+    <div id="qrzCardCall" class="qrz-card-call"></div>
+    <div id="qrzCardName" class="qrz-card-name"></div>
+    <div id="qrzCardQth" class="hint"></div>
+    <div id="qrzCardMeta" class="hint"></div>
+    <p id="qrzCardErr" class="hint"></p>
+    <div class="row">
+      <button id="qrzCardOpen" type="button" class="primary">Open on QRZ.com</button>
+    </div>
+  </section>
+
+  <script src="/static/vendor/leaflet/leaflet.js"></script>
+  <script src="/static/app.js?v=board32"></script>
+  <script src="/static/tuner.js?v=scale500"></script>
+  <script src="/static/voacap.js?v=voacap19"></script>
+  <script src="/static/iss.js?v=iss13"></script>
+</body>
+</html>
